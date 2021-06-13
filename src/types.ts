@@ -7,7 +7,7 @@ interface CancelCommand {
 
 interface ChangeCommand {
     quantity: number;
-    limitPrice: number;
+    limitPrice?: number;
     stopPrice: number;
     orderId: string;
     strategyId?: string;

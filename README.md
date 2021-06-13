@@ -2,20 +2,15 @@
 
 A tiny js wrapper for the NinjaTrader 8 file api.
 
-[Read NinjaTrader's docoumentation](https://ninjatrader.com/support/helpGuides/nt8/?functions.htm) for more information about how the file api works.
+[Read NinjaTrader's documentation](https://ninjatrader.com/support/helpGuides/nt8/?functions.htm) for more information about how the file api works.
 
 # Getting Started
 
-```
-npm install ninjatrader
-
-```
+`npm install ninjatrader`
 
 or
 
-```
-yarn add ninjatrader
-```
+`yarn add ninjatrader`
 
 In NinjaTrader, enable automated trading by making sure `AT Interface` is checked under `Tools > Options > Automated Trading Interface`.
 
@@ -26,7 +21,9 @@ Initialize
 ```
 import NinjaTrader, { NinjaTraderAction, NinjaTraderTif } from 'ninjatrader';
 
-const nt = new NinjaTrader();
+const nt = new NinjaTrader({
+    account: "Sim101"
+});
 ```
 
 Place a market order
@@ -67,6 +64,28 @@ nt.market({
 });
 
 nt.cancel({
+    orderId
+});
+```
+
+Update an order
+
+```
+const orderId = "1"; // random unique id
+
+nt.limit({
+    action: NinjaTraderAction.Buy,
+    quantity: 69,
+    tif: NinjaTraderTif.Day,
+    limitPrice: 33159,
+    stopPrice: 32110,
+    instrument: 'BTCUSD',
+    orderId
+});
+
+nt.change({
+    quantity: 69,
+    stopPrice: 32210,
     orderId
 });
 ```
