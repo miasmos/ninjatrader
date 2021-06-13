@@ -14,6 +14,8 @@ or
 yarn add ninjatrader
 ```
 
+In NinjaTrader, enable automated trading by making sure `AT Interface` is checked under `Tools > Options > Automated Trading Interface`.
+
 # Example
 
 Initialize

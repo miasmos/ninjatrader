@@ -165,8 +165,8 @@ class NinjaTrader {
     reverse(options: NinjaTraderReverse) {
         return this.submitOrder({
             command: NinjaTraderCommand.ReversePosition,
-            ...options,
             account: this.account,
+            ...options,
         });
     }
 
