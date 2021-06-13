@@ -26,4 +26,53 @@ enum NinjaTraderTif {
     GoodUntilCancelled = "GTC",
 }
 
-export { NinjaTraderCommand, NinjaTraderAction, NinjaTraderOrderType, NinjaTraderTif };
+enum FileEvent {
+    Modified = "modified",
+}
+
+enum OrderStatus {
+    Filled = "FILLED",
+    Initialized = "INITIALIZED",
+    Submitted = "SUBMITTED",
+    Accepted = "ACCEPTED",
+    Working = "WORKING",
+    ChangeSubmitted = "CHANGESUBMITTED",
+    CancelPending = "CANCELPENDING",
+    Cancelled = "CANCELLED",
+    Rejected = "REJECTED",
+    PartiallyFilled = "PARTIALLYFILLED",
+    TriggerPending = "TRIGGERPENDING",
+}
+
+enum PositionStatus {
+    Update = "UPDATE",
+}
+
+enum ConnectionStatus {
+    Connected = "CONNECTED",
+    Disconnected = "DISCONNECTED",
+}
+
+enum MarketPosition {
+    Flat = "FLAT",
+    Long = "LONG",
+    Short = "SHORT",
+}
+
+enum NinjaTraderEvent {
+    Connected = "connected",
+    Disconnected = "disconnected",
+}
+
+export {
+    NinjaTraderCommand,
+    NinjaTraderAction,
+    NinjaTraderOrderType,
+    NinjaTraderTif,
+    NinjaTraderEvent,
+    FileEvent,
+    OrderStatus,
+    ConnectionStatus,
+    MarketPosition,
+    PositionStatus,
+};

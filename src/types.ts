@@ -1,4 +1,6 @@
-import { NinjaTraderAction, NinjaTraderOrderType, NinjaTraderTif } from "./enum";
+import EventEmitter from "events";
+import { MarketPosition, NinjaTraderAction, NinjaTraderOrderType, NinjaTraderTif } from "./enum";
+import Watcher from "./files/watcher";
 
 interface CancelCommand {
     orderId: string;
@@ -57,6 +59,45 @@ interface NinjaTraderOptions {
     path?: string;
 }
 
+interface StateOptions {
+    path: string;
+}
+
+interface OrderStateOptions extends StateOptions {
+    orderId: string;
+    account: string;
+}
+
+interface ConnectionStateOptions extends StateOptions {
+    connection: string;
+}
+
+interface PositionUpdateStateOptions extends StateOptions {
+    instrument: string;
+    account: string;
+}
+
+interface OrderState {
+    quantity: number;
+    price: number;
+}
+
+interface ConnectionState {
+    connected: boolean;
+}
+
+interface StateWatcher extends EventEmitter {
+    path: string;
+    watcher: Watcher;
+    onModified: (file: string) => void;
+}
+
+interface PositionUpdateState {
+    position: MarketPosition;
+    quantity: number;
+    price: number;
+}
+
 type NinjaTraderMarket = Omit<PlaceCommand, "orderType" | "account">;
 
 type NinjaTraderLimit = Omit<PlaceCommand, "orderType" | "account" | "limitPrice"> &
@@ -102,6 +143,13 @@ export {
     CloseStrategyCommand,
     PlaceCommand,
     ReversePositionCommand,
+    OrderStateOptions,
+    PositionUpdateStateOptions,
+    ConnectionStateOptions,
+    OrderState,
+    ConnectionState,
+    PositionUpdateState,
+    StateWatcher,
     NinjaTraderOptions,
     NinjaTraderMarket,
     NinjaTraderLimit,

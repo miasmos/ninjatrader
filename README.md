@@ -19,7 +19,7 @@ In NinjaTrader, enable automated trading by making sure `AT Interface` is checke
 Initialize
 
 ```
-import NinjaTrader, { NinjaTraderAction, NinjaTraderTif } from 'ninjatrader';
+import NinjaTrader, { NinjaTraderAction, NinjaTraderTif, PositionUpdateState } from 'ninjatrader';
 
 const nt = new NinjaTrader({
     account: "Sim101"
@@ -29,25 +29,29 @@ const nt = new NinjaTrader({
 Place a market order
 
 ```
-nt.market({
+const order = await nt.market({
     action: NinjaTraderAction.Buy,
     quantity: 69,
     tif: NinjaTraderTif.Day,
-    instrument: 'AMC'
+    instrument: "AMC"
 });
+
+console.log(order); // { quantity: 69, price: 49.40 }
 ```
 
 Place a limit order with a stop loss
 
 ```
-nt.limit({
+const order = await nt.limit({
     action: NinjaTraderAction.Buy,
     quantity: 69,
     tif: NinjaTraderTif.Day,
-    instrument: 'GME',
+    instrument: "GME",
     limitPrice: 1000,
     stopPrice: 980
 });
+
+console.log(order); // { quantity: 69, price: 998.12 }
 ```
 
 Cancel an order
@@ -59,7 +63,7 @@ nt.market({
     action: NinjaTraderAction.Buy,
     quantity: 69,
     tif: NinjaTraderTif.Day,
-    instrument: 'BTCUSD',
+    instrument: "BTCUSD",
     orderId
 });
 
@@ -79,7 +83,7 @@ nt.limit({
     tif: NinjaTraderTif.Day,
     limitPrice: 33159,
     stopPrice: 32110,
-    instrument: 'BTCUSD',
+    instrument: "BTCUSD",
     orderId
 });
 
@@ -87,6 +91,26 @@ nt.change({
     quantity: 69,
     stopPrice: 32210,
     orderId
+});
+```
+
+Listen for connection status
+
+```
+nt.onConnected("Simulated Data Feed", () => {
+    // simulated data feed connected
+});
+
+nt.onDisconnected("Simulated Data Feed", () => {
+    // simulated data feed disconnected
+});
+```
+
+Listen for position changes
+
+```
+nt.onPositionChange("ETHUSD", (position: PositionUpdateState) => {
+    console.log(position); // { position: 'LONG', quantity: 4, price: 2336.46 }
 });
 ```
 
