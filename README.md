@@ -58,6 +58,7 @@ nt.market({
     quantity: 69,
     tif: NinjaTraderTif.Day,
     instrument: 'BTCUSD',
+    orderId
 });
 
 nt.cancel({
