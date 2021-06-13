@@ -6,19 +6,35 @@ import Watcher from "./watcher";
 declare interface ConnectionStateWatcher {
     on(event: ConnectionStatus.Connected, listener: () => void): this;
     on(event: ConnectionStatus.Disconnected, listener: () => void): this;
+    on(event: ConnectionStatus.Update, listener: (connected: boolean) => void): this;
 }
 
 class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
     path: string = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
     connection: string;
     watcher: Watcher;
-    lastState: string;
+    state: string;
 
-    constructor({ connection, path }: ConnectionStateOptions) {
+    constructor({
+        connection,
+        path,
+        onConnected,
+        onDisconnected,
+        onUpdate,
+    }: ConnectionStateOptions) {
         super();
         this.connection = connection;
         if (path) {
             this.path = path;
+        }
+        if (typeof onConnected === "function") {
+            this.onConnected(onConnected);
+        }
+        if (typeof onDisconnected === "function") {
+            this.onDisconnected(onDisconnected);
+        }
+        if (typeof onUpdate === "function") {
+            this.onUpdate(onUpdate);
         }
 
         this.watcher = new Watcher({
@@ -28,14 +44,14 @@ class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
         this.watcher.on(FileEvent.Modified, this.onModified.bind(this));
     }
 
-    onModified(file: string) {
+    private onModified(file: string) {
         const status = file.trim();
-        const shouldUpdate = status !== this.lastState && status.length > 0;
+        const shouldUpdate = status !== this.state && status.length > 0;
 
         if (!shouldUpdate) {
             return;
         }
-        this.lastState = status;
+        this.state = status;
         switch (status) {
             case ConnectionStatus.Connected:
                 this.emit(ConnectionStatus.Connected);
@@ -46,10 +62,23 @@ class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
             default:
             // noop
         }
+        this.emit(ConnectionStatus.Update, status === ConnectionStatus.Connected ? true : false);
+    }
+
+    onConnected(callback: () => void) {
+        this.on(ConnectionStatus.Connected, callback);
+    }
+
+    onDisconnected(callback: () => void) {
+        this.on(ConnectionStatus.Disconnected, callback);
+    }
+
+    onUpdate(callback: (connected: boolean) => void) {
+        this.on(ConnectionStatus.Update, callback);
     }
 
     get connected(): boolean {
-        return this.lastState === ConnectionStatus.Connected ? true : false;
+        return this.state === ConnectionStatus.Connected ? true : false;
     }
 }
 

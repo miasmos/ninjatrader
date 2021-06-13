@@ -19,7 +19,7 @@ In NinjaTrader, enable automated trading by making sure `AT Interface` is checke
 Initialize
 
 ```
-import NinjaTrader, { NinjaTraderAction, NinjaTraderTif, PositionUpdateState } from 'ninjatrader';
+import NinjaTrader from 'ninjatrader';
 
 const nt = new NinjaTrader({
     account: "Sim101"
@@ -29,19 +29,37 @@ const nt = new NinjaTrader({
 Place a market order
 
 ```
+import { NinjaTraderAction, NinjaTraderTif, OrderStatus } from 'ninjatrader';
+
 const order = await nt.market({
     action: NinjaTraderAction.Buy,
     quantity: 69,
     tif: NinjaTraderTif.Day,
-    instrument: "AMC"
-});
+    instrument: "AMC",
+    onUpdate: (status: OrderStatus, state: OrderState) => {
+        switch(status) {
+            case OrderStatus.Rejected:
+                // order rejected
+                break;
+            case OrderStatus.Filled:
+                // order filled
+                console.log(state); // { quantity: 69, price: 49.40 }
+                break;
+        }
+    },
+    onRejected: (state: OrderState) => {
+        // order rejected
+        console.log(state); // { quantity: 0, price: 0 }
+    }
+}); // order accepted after await
 
-console.log(order); // { quantity: 69, price: 49.40 }
 ```
 
 Place a limit order with a stop loss
 
 ```
+import { NinjaTraderAction, NinjaTraderTif } from 'ninjatrader';
+
 const order = await nt.limit({
     action: NinjaTraderAction.Buy,
     quantity: 69,
@@ -57,6 +75,8 @@ console.log(order); // { quantity: 69, price: 998.12 }
 Cancel an order
 
 ```
+import { NinjaTraderAction, NinjaTraderTif } from 'ninjatrader';
+
 const orderId = "1"; // random unique id
 
 nt.market({
@@ -75,21 +95,23 @@ nt.cancel({
 Update an order
 
 ```
+import { NinjaTraderAction, NinjaTraderTif } from 'ninjatrader';
+
 const orderId = "1"; // random unique id
 
 nt.limit({
     action: NinjaTraderAction.Buy,
     quantity: 69,
     tif: NinjaTraderTif.Day,
-    limitPrice: 33159,
-    stopPrice: 32110,
-    instrument: "BTCUSD",
+    limitPrice: 17.21,
+    stopPrice: 17.15,
+    instrument: "BB",
     orderId
 });
 
 nt.change({
     quantity: 69,
-    stopPrice: 32210,
+    stopPrice: 17.19,
     orderId
 });
 ```
@@ -104,12 +126,16 @@ nt.onConnected("Simulated Data Feed", () => {
 nt.onDisconnected("Simulated Data Feed", () => {
     // simulated data feed disconnected
 });
+
+nt.onConnection("Simulated Data Feed", (connected: boolean) => {
+    console.log(connected); // true / false
+})
 ```
 
 Listen for position changes
 
 ```
-nt.onPositionChange("ETHUSD", (position: PositionUpdateState) => {
+nt.onPosition("ETHUSD", (position: PositionUpdateState) => {
     console.log(position); // { position: 'LONG', quantity: 4, price: 2336.46 }
 });
 ```

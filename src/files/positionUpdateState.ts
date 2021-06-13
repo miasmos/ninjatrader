@@ -12,14 +12,17 @@ class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
     account: string;
     instrument: string;
     watcher: Watcher;
-    lastState: PositionUpdateState;
+    state: PositionUpdateState;
 
-    constructor({ path, account, instrument }: PositionUpdateStateOptions) {
+    constructor({ path, account, instrument, onUpdate }: PositionUpdateStateOptions) {
         super();
         this.account = account;
         this.instrument = instrument;
         if (path) {
             this.path = path;
+        }
+        if (typeof onUpdate === "function") {
+            this.onUpdate(onUpdate);
         }
 
         this.watcher = new Watcher({
@@ -29,7 +32,7 @@ class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
         this.watcher.on(FileEvent.Modified, this.onModified.bind(this));
     }
 
-    onModified(file: string) {
+    private onModified(file: string) {
         const [position, quantity, price] = file.trim().split(";");
         const state: PositionUpdateState = {
             position: position as MarketPosition,
@@ -37,33 +40,37 @@ class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
             price: Number(price),
         };
         const shouldUpdate =
-            !this.lastState ||
-            this.lastState.position !== state.position ||
-            this.lastState.quantity !== state.quantity ||
-            this.lastState.price !== state.price;
+            !this.state ||
+            this.state.position !== state.position ||
+            this.state.quantity !== state.quantity ||
+            this.state.price !== state.price;
 
         if (shouldUpdate) {
             this.emit(PositionStatus.Update, state);
         }
     }
 
+    onUpdate(callback: (order: PositionUpdateState) => void) {
+        this.on(PositionStatus.Update, callback);
+    }
+
     get position(): MarketPosition {
-        if (this.lastState) {
-            return this.lastState.position;
+        if (this.state) {
+            return this.state.position;
         }
         return MarketPosition.None;
     }
 
     get quantity(): number {
-        if (this.lastState) {
-            return this.lastState.quantity;
+        if (this.state) {
+            return this.state.quantity;
         }
         return 0;
     }
 
     get price(): number {
-        if (this.lastState) {
-            return this.lastState.price;
+        if (this.state) {
+            return this.state.price;
         }
         return 0;
     }

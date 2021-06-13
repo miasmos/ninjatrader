@@ -42,6 +42,7 @@ enum OrderStatus {
     Rejected = "REJECTED",
     PartiallyFilled = "PARTIALLYFILLED",
     TriggerPending = "TRIGGERPENDING",
+    Update = "UPDATE",
 }
 
 enum PositionStatus {
@@ -51,6 +52,7 @@ enum PositionStatus {
 enum ConnectionStatus {
     Connected = "CONNECTED",
     Disconnected = "DISCONNECTED",
+    Update = "UPDATE",
 }
 
 enum MarketPosition {

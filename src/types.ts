@@ -1,6 +1,27 @@
 import EventEmitter from "events";
-import { MarketPosition, NinjaTraderAction, NinjaTraderOrderType, NinjaTraderTif } from "./enum";
+import {
+    MarketPosition,
+    NinjaTraderAction,
+    NinjaTraderOrderType,
+    NinjaTraderTif,
+    OrderStatus,
+} from "./enum";
 import Watcher from "./files/watcher";
+
+interface NinjaTraderOrderOptions {
+    onUpdate?: (status: OrderStatus, order: OrderState) => void;
+    onFilled?: (order: OrderState) => void;
+    onInitialized?: (order: OrderState) => void;
+    onSubmitted?: (order: OrderState) => void;
+    onWorking?: (order: OrderState) => void;
+    onAccepted?: (order: OrderState) => void;
+    onChangeSubmitted?: (order: OrderState) => void;
+    onCancelPending?: (order: OrderState) => void;
+    onCancelled?: (order: OrderState) => void;
+    onRejected?: (order: OrderState) => void;
+    onPartiallyFilled?: (order: OrderState) => void;
+    onTriggerPending?: (order: OrderState) => void;
+}
 
 interface CancelCommand {
     orderId: string;
@@ -63,18 +84,22 @@ interface StateOptions {
     path: string;
 }
 
-interface OrderStateOptions extends StateOptions {
+interface OrderStateOptions extends StateOptions, NinjaTraderOrderOptions {
     orderId: string;
     account: string;
 }
 
 interface ConnectionStateOptions extends StateOptions {
     connection: string;
+    onConnected?: () => void;
+    onDisconnected?: () => void;
+    onUpdate?: (connected: boolean) => void;
 }
 
 interface PositionUpdateStateOptions extends StateOptions {
     instrument: string;
     account: string;
+    onUpdate?: (order: PositionUpdateState) => void;
 }
 
 interface OrderState {
@@ -89,7 +114,6 @@ interface ConnectionState {
 interface StateWatcher extends EventEmitter {
     path: string;
     watcher: Watcher;
-    onModified: (file: string) => void;
 }
 
 interface PositionUpdateState {
@@ -100,14 +124,22 @@ interface PositionUpdateState {
 
 type NinjaTraderMarket = Omit<PlaceCommand, "orderType" | "account">;
 
+type NinjaTraderMarketOptions = NinjaTraderOrderOptions & NinjaTraderMarket;
+
 type NinjaTraderLimit = Omit<PlaceCommand, "orderType" | "account" | "limitPrice"> &
     Required<Pick<PlaceCommand, "limitPrice">>;
+
+type NinjaTraderLimitOptions = NinjaTraderOrderOptions & NinjaTraderLimit;
 
 type NinjaTraderStop = Omit<PlaceCommand, "orderType" | "account" | "limitPrice"> &
     Required<Pick<PlaceCommand, "stopPrice">>;
 
+type NinjaTraderStopOptions = NinjaTraderOrderOptions & NinjaTraderStop;
+
 type NinjaTraderStopLimit = Omit<PlaceCommand, "orderType" | "account" | "limitPrice"> &
     Required<Pick<PlaceCommand, "stopPrice" | "limitPrice">>;
+
+type NinjaTraderStopLimitOptions = NinjaTraderOrderOptions & NinjaTraderStopLimit;
 
 type NinjaTraderCancel = CancelCommand;
 
@@ -151,10 +183,15 @@ export {
     PositionUpdateState,
     StateWatcher,
     NinjaTraderOptions,
+    NinjaTraderOrderOptions,
     NinjaTraderMarket,
+    NinjaTraderMarketOptions,
     NinjaTraderLimit,
+    NinjaTraderLimitOptions,
     NinjaTraderStop,
+    NinjaTraderStopOptions,
     NinjaTraderStopLimit,
+    NinjaTraderStopLimitOptions,
     NinjaTraderCancel,
     NinjaTraderChange,
     NinjaTraderClose,

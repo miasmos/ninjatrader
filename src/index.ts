@@ -11,23 +11,26 @@ import {
     PositionStatus,
 } from "./enum";
 import {
-    ConnectionStateOptions,
     NinjaTraderAllCommands,
     NinjaTraderCancel,
     NinjaTraderChange,
     NinjaTraderClose,
     NinjaTraderCloseStrategy,
     NinjaTraderLimit,
+    NinjaTraderLimitOptions,
     NinjaTraderMarket,
+    NinjaTraderMarketOptions,
     NinjaTraderOptions,
     NinjaTraderReverse,
     NinjaTraderStop,
+    NinjaTraderStopOptions,
     NinjaTraderStopLimit,
+    NinjaTraderStopLimitOptions,
     OrderState,
     PlaceCommand,
     PositionUpdateState,
-    PositionUpdateStateOptions,
     StateWatcher,
+    NinjaTraderOrderOptions,
 } from "./types";
 import OrderStateWatcher from "./files/orderState";
 import Util from "./util";
@@ -37,7 +40,6 @@ import PositionUpdateWatcher from "./files/positionUpdateState";
 class NinjaTrader extends EventEmitter {
     account: string = "Sim101";
     path: string = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
-    connections: string[] = [];
     watchers: { [key: string]: StateWatcher } = {};
 
     constructor(options?: NinjaTraderOptions) {
@@ -60,10 +62,10 @@ class NinjaTrader extends EventEmitter {
         }
     }
 
-    onConnected(connection: string, callback: (connection: string) => void) {
-        let watcher: StateWatcher;
+    onConnected(connection: string, callback: () => void) {
+        let watcher: ConnectionStateWatcher;
         if (connection in this.watchers) {
-            watcher = this.watchers[connection];
+            watcher = this.watchers[connection] as ConnectionStateWatcher;
         } else {
             watcher = new ConnectionStateWatcher({
                 connection,
@@ -72,14 +74,14 @@ class NinjaTrader extends EventEmitter {
             this.watchers[connection] = watcher;
         }
 
-        watcher.on(ConnectionStatus.Connected, callback);
+        watcher.onConnected(callback);
         return watcher;
     }
 
-    onDisconnected(connection: string, callback: (connection: string) => void) {
-        let watcher: StateWatcher;
+    onDisconnected(connection: string, callback: () => void) {
+        let watcher: ConnectionStateWatcher;
         if (connection in this.watchers) {
-            watcher = this.watchers[connection];
+            watcher = this.watchers[connection] as ConnectionStateWatcher;
         } else {
             watcher = new ConnectionStateWatcher({
                 connection,
@@ -88,14 +90,30 @@ class NinjaTrader extends EventEmitter {
             this.watchers[connection] = watcher;
         }
 
-        watcher.on(ConnectionStatus.Disconnected, callback);
+        watcher.onDisconnected(callback);
         return watcher;
     }
 
-    onPositionChange(instrument: string, callback: (state: PositionUpdateState) => void) {
-        let watcher: StateWatcher;
+    onConnection(connection: string, callback: (connected: boolean) => void) {
+        let watcher: ConnectionStateWatcher;
+        if (connection in this.watchers) {
+            watcher = this.watchers[connection] as ConnectionStateWatcher;
+        } else {
+            watcher = new ConnectionStateWatcher({
+                connection,
+                path: this.path,
+            });
+            this.watchers[connection] = watcher;
+        }
+
+        watcher.onUpdate(callback);
+        return watcher;
+    }
+
+    onPosition(instrument: string, callback: (state: PositionUpdateState) => void) {
+        let watcher: PositionUpdateWatcher;
         if (instrument in this.watchers) {
-            watcher = this.watchers[instrument];
+            watcher = this.watchers[instrument] as PositionUpdateWatcher;
         } else {
             watcher = new PositionUpdateWatcher({
                 account: this.account,
@@ -105,11 +123,11 @@ class NinjaTrader extends EventEmitter {
             this.watchers[instrument] = watcher;
         }
 
-        watcher.on(PositionStatus.Update, callback);
+        watcher.onUpdate(callback);
         return watcher;
     }
 
-    market(options: NinjaTraderMarket) {
+    market(options: NinjaTraderMarketOptions) {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -209,9 +227,21 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    private async submitOrderAndWatch(
-        options: PlaceCommand & { command: string }
-    ): Promise<OrderStateWatcher> {
+    private async submitOrderAndWatch({
+        onUpdate,
+        onFilled,
+        onInitialized,
+        onSubmitted,
+        onWorking,
+        onAccepted,
+        onChangeSubmitted,
+        onCancelPending,
+        onCancelled,
+        onRejected,
+        onPartiallyFilled,
+        onTriggerPending,
+        ...options
+    }: NinjaTraderOrderOptions & PlaceCommand & { command: string }): Promise<OrderStateWatcher> {
         if (typeof options.orderId !== "string") {
             options.orderId = Math.random().toString().substring(2);
         }
@@ -220,9 +250,21 @@ class NinjaTrader extends EventEmitter {
             orderId: options.orderId!,
             path: this.path,
             account: this.account,
+            onUpdate,
+            onFilled,
+            onInitialized,
+            onSubmitted,
+            onWorking,
+            onAccepted,
+            onChangeSubmitted,
+            onCancelPending,
+            onCancelled,
+            onRejected,
+            onPartiallyFilled,
+            onTriggerPending,
         });
         await this.submitOrder(options);
-        await Util.eventAsync<OrderState>(order, OrderStatus.Accepted);
+        await Util.eventAsync<OrderState>(order, OrderStatus.Submitted);
         return order;
     }
 
@@ -277,9 +319,21 @@ export {
 export {
     PositionUpdateState,
     OrderState,
+    OrderStatus,
+    ConnectionStatus,
+    PositionStatus,
+    OrderStateWatcher,
+    PositionUpdateWatcher,
+    ConnectionStateWatcher,
     NinjaTraderOptions,
     NinjaTraderMarket,
+    NinjaTraderMarketOptions,
     NinjaTraderLimit,
+    NinjaTraderLimitOptions,
+    NinjaTraderStop,
+    NinjaTraderStopOptions,
+    NinjaTraderStopLimit,
+    NinjaTraderStopLimitOptions,
     NinjaTraderCancel,
     NinjaTraderChange,
     NinjaTraderClose,

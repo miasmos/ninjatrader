@@ -15,6 +15,7 @@ declare interface OrderStateWatcher {
     on(event: OrderStatus.Rejected, listener: (order: OrderState) => void): this;
     on(event: OrderStatus.PartiallyFilled, listener: (order: OrderState) => void): this;
     on(event: OrderStatus.TriggerPending, listener: (order: OrderState) => void): this;
+    on(event: OrderStatus.Update, listener: (status: OrderStatus, order: OrderState) => void): this;
 }
 
 class OrderStateWatcher extends EventEmitter implements StateWatcher {
@@ -22,15 +23,67 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
     account: string;
     orderId: string;
     watcher: Watcher;
-    lastStatus: OrderStatus;
-    lastState: OrderState;
+    status: OrderStatus;
+    state: OrderState;
 
-    constructor({ orderId, path, account }: OrderStateOptions) {
+    constructor({
+        orderId,
+        path,
+        account,
+        onUpdate,
+        onFilled,
+        onInitialized,
+        onSubmitted,
+        onWorking,
+        onAccepted,
+        onChangeSubmitted,
+        onCancelPending,
+        onCancelled,
+        onRejected,
+        onPartiallyFilled,
+        onTriggerPending,
+    }: OrderStateOptions) {
         super();
         this.orderId = orderId;
         this.account = account;
         if (path) {
             this.path = path;
+        }
+        if (typeof onUpdate === "function") {
+            this.onUpdate(onUpdate);
+        }
+        if (typeof onFilled === "function") {
+            this.onFilled(onFilled);
+        }
+        if (typeof onInitialized === "function") {
+            this.onInitialized(onInitialized);
+        }
+        if (typeof onSubmitted === "function") {
+            this.onSubmitted(onSubmitted);
+        }
+        if (typeof onWorking === "function") {
+            this.onWorking(onWorking);
+        }
+        if (typeof onAccepted === "function") {
+            this.onAccepted(onAccepted);
+        }
+        if (typeof onChangeSubmitted === "function") {
+            this.onChangeSubmitted(onChangeSubmitted);
+        }
+        if (typeof onCancelPending === "function") {
+            this.onCancelPending(onCancelPending);
+        }
+        if (typeof onCancelled === "function") {
+            this.onCancelled(onCancelled);
+        }
+        if (typeof onRejected === "function") {
+            this.onRejected(onRejected);
+        }
+        if (typeof onPartiallyFilled === "function") {
+            this.onPartiallyFilled(onPartiallyFilled);
+        }
+        if (typeof onTriggerPending === "function") {
+            this.onTriggerPending(onTriggerPending);
         }
 
         this.watcher = new Watcher({
@@ -40,38 +93,83 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
         this.watcher.on(FileEvent.Modified, this.onModified.bind(this));
     }
 
-    onModified(file: string) {
+    onFilled(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Filled, callback);
+    }
+
+    onInitialized(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Initialized, callback);
+    }
+
+    onSubmitted(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Submitted, callback);
+    }
+
+    onAccepted(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Accepted, callback);
+    }
+
+    onWorking(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Working, callback);
+    }
+
+    onChangeSubmitted(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.ChangeSubmitted, callback);
+    }
+
+    onCancelPending(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.CancelPending, callback);
+    }
+
+    onCancelled(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Cancelled, callback);
+    }
+
+    onRejected(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.Rejected, callback);
+    }
+
+    onPartiallyFilled(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.PartiallyFilled, callback);
+    }
+
+    onTriggerPending(callback: (order: OrderState) => void) {
+        this.on(OrderStatus.TriggerPending, callback);
+    }
+
+    onUpdate(callback: (status: OrderStatus, order: OrderState) => void) {
+        this.on(OrderStatus.Update, callback);
+    }
+
+    private onModified(file: string) {
         const [status, quantity, price] = file.trim().split(";");
         const shouldUpdate =
             status &&
             quantity &&
             price &&
-            ((!this.lastStatus && !this.lastState) ||
-                this.lastStatus !== (status as OrderStatus) ||
-                this.lastState.price !== Number(price) ||
-                this.lastState.quantity !== Number(quantity));
+            ((!this.status && !this.state) ||
+                this.status !== (status as OrderStatus) ||
+                this.state.price !== Number(price) ||
+                this.state.quantity !== Number(quantity));
         if (!shouldUpdate) {
             return;
         }
-        this.lastStatus = status as OrderStatus;
-        this.lastState = { quantity: Number(quantity), price: Number(price) };
-        this.emit(status, this.lastState);
-    }
-
-    get status(): OrderStatus {
-        return this.lastStatus;
+        this.status = status as OrderStatus;
+        this.state = { quantity: Number(quantity), price: Number(price) };
+        this.emit(status, this.state);
+        this.emit(OrderStatus.Update, status, this.state);
     }
 
     get price(): Number {
-        if (this.lastState) {
-            return this.lastState.price;
+        if (this.state) {
+            return this.state.price;
         }
         return 0;
     }
 
     get quantity(): Number {
-        if (this.lastState) {
-            return this.lastState.quantity;
+        if (this.state) {
+            return this.state.quantity;
         }
         return 0;
     }
