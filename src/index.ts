@@ -92,23 +92,21 @@ class NinjaTrader extends EventEmitter {
 
     onPositionChange(instrument: string, callback: (state: PositionUpdateState) => void) {
         let watcher: StateWatcher;
-        const name = `${instrument}-${instrument}`;
-
-        if (name in this.watchers) {
-            watcher = this.watchers[name];
+        if (instrument in this.watchers) {
+            watcher = this.watchers[instrument];
         } else {
             watcher = new PositionUpdateWatcher({
                 account: this.account,
                 instrument,
                 path: this.path,
             });
-            this.watchers[name] = watcher;
+            this.watchers[instrument] = watcher;
         }
 
         watcher.on(PositionStatus.Update, callback);
     }
 
-    async market(options: NinjaTraderMarket): Promise<OrderState> {
+    market(options: NinjaTraderMarket): Promise<OrderState> {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -208,7 +206,9 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    async submitOrderAndWatch(options: PlaceCommand & { command: string }): Promise<OrderState> {
+    private async submitOrderAndWatch(
+        options: PlaceCommand & { command: string }
+    ): Promise<OrderState> {
         if (typeof options.orderId !== "string") {
             options.orderId = Math.random().toString().substring(2);
         }
@@ -223,14 +223,14 @@ class NinjaTrader extends EventEmitter {
         return state;
     }
 
-    submitOrder(command: NinjaTraderAllCommands) {
+    private submitOrder(command: NinjaTraderAllCommands) {
         return fs.promises.writeFile(
             `${this.path}\\incoming\\oif.${Math.random().toString().substring(2)}.txt`,
             NinjaTrader.buildCommand(command)
         );
     }
 
-    static buildCommand({
+    private static buildCommand({
         command,
         account,
         instrument,
