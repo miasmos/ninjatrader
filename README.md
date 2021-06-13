@@ -1,4 +1,4 @@
-# Ninjatrader ![npm](https://img.shields.io/npm/v/ninjatrader?style=flat-square)
+# Ninjatrader [![npm](https://img.shields.io/npm/v/ninjatrader?style=flat-square)](https://www.npmjs.com/package/ninjatrader)
 
 A tiny js wrapper for the NinjaTrader 8 file api.
 
