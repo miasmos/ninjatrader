@@ -1,0 +1,49 @@
+{
+    "name": "ninjatrader",
+    "version": "0.1.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "description": "A tiny js wrapper for the NinjaTrader 8 file api.",
+    "files": [
+        "dist/**/*"
+    ],
+    "keywords": [
+        "ninjatrader"
+    ],
+    "author": "Stephen Poole",
+    "scripts": {
+        "start": "tsc",
+        "lint": "tslint -p tsconfig.json",
+        "test": "return 1",
+        "snyk-protect": "snyk protect",
+        "prepare": "yarn run snyk-protect && yarn start"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/stephenpoole/ninjatrader"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^15.12.2",
+        "@types/webpack": "^4.4.24",
+        "@types/webpack-env": "^1.13.7",
+        "@typescript-eslint/eslint-plugin": "^2.27.0",
+        "@typescript-eslint/parser": "^2.27.0",
+        "awesome-typescript-loader": "^5.2.1",
+        "cross-env": "^7.0.2",
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-loader": "^4.0.0",
+        "eslint-plugin-import": "^2.16.0",
+        "snyk": "^1.630.0",
+        "source-map": "^0.7.3",
+        "source-map-loader": "^0.2.4",
+        "source-map-support": "^0.5.10",
+        "ts-node": "^8.9.0",
+        "typescript": "^3.8.3",
+        "webpack": "^4.29.5",
+        "webpack-cli": "^3.2.3",
+        "webpack-node-externals": "^1.7.2"
+    },
+    "snyk": true
+}
