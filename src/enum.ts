@@ -57,6 +57,7 @@ enum MarketPosition {
     Flat = "FLAT",
     Long = "LONG",
     Short = "SHORT",
+    None = "NONE",
 }
 
 enum NinjaTraderEvent {

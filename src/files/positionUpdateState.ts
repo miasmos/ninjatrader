@@ -46,6 +46,27 @@ class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
             this.emit(PositionStatus.Update, state);
         }
     }
+
+    get position(): MarketPosition {
+        if (this.lastState) {
+            return this.lastState.position;
+        }
+        return MarketPosition.None;
+    }
+
+    get quantity(): number {
+        if (this.lastState) {
+            return this.lastState.quantity;
+        }
+        return 0;
+    }
+
+    get price(): number {
+        if (this.lastState) {
+            return this.lastState.price;
+        }
+        return 0;
+    }
 }
 
 export default PositionUpdateWatcher;

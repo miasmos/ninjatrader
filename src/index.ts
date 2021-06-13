@@ -73,6 +73,7 @@ class NinjaTrader extends EventEmitter {
         }
 
         watcher.on(ConnectionStatus.Connected, callback);
+        return watcher;
     }
 
     onDisconnected(connection: string, callback: (connection: string) => void) {
@@ -88,6 +89,7 @@ class NinjaTrader extends EventEmitter {
         }
 
         watcher.on(ConnectionStatus.Disconnected, callback);
+        return watcher;
     }
 
     onPositionChange(instrument: string, callback: (state: PositionUpdateState) => void) {
@@ -104,9 +106,10 @@ class NinjaTrader extends EventEmitter {
         }
 
         watcher.on(PositionStatus.Update, callback);
+        return watcher;
     }
 
-    market(options: NinjaTraderMarket): Promise<OrderState> {
+    market(options: NinjaTraderMarket) {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -208,7 +211,7 @@ class NinjaTrader extends EventEmitter {
 
     private async submitOrderAndWatch(
         options: PlaceCommand & { command: string }
-    ): Promise<OrderState> {
+    ): Promise<OrderStateWatcher> {
         if (typeof options.orderId !== "string") {
             options.orderId = Math.random().toString().substring(2);
         }
@@ -219,8 +222,8 @@ class NinjaTrader extends EventEmitter {
             account: this.account,
         });
         await this.submitOrder(options);
-        const state = await Util.eventAsync<OrderState>(order, OrderStatus.Filled);
-        return state;
+        await Util.eventAsync<OrderState>(order, OrderStatus.Accepted);
+        return order;
     }
 
     private submitOrder(command: NinjaTraderAllCommands) {

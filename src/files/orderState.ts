@@ -22,6 +22,8 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
     account: string;
     orderId: string;
     watcher: Watcher;
+    lastStatus: OrderStatus;
+    lastState: OrderState;
 
     constructor({ orderId, path, account }: OrderStateOptions) {
         super();
@@ -40,12 +42,38 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
 
     onModified(file: string) {
         const [status, quantity, price] = file.trim().split(";");
-        const shouldUpdate = status && quantity && price;
+        const shouldUpdate =
+            status &&
+            quantity &&
+            price &&
+            ((!this.lastStatus && !this.lastState) ||
+                this.lastStatus !== (status as OrderStatus) ||
+                this.lastState.price !== Number(price) ||
+                this.lastState.quantity !== Number(quantity));
         if (!shouldUpdate) {
             return;
         }
+        this.lastStatus = status as OrderStatus;
+        this.lastState = { quantity: Number(quantity), price: Number(price) };
+        this.emit(status, this.lastState);
+    }
 
-        this.emit(status, { quantity: Number(quantity), price: Number(price) });
+    get status(): OrderStatus {
+        return this.lastStatus;
+    }
+
+    get price(): Number {
+        if (this.lastState) {
+            return this.lastState.price;
+        }
+        return 0;
+    }
+
+    get quantity(): Number {
+        if (this.lastState) {
+            return this.lastState.quantity;
+        }
+        return 0;
     }
 }
 

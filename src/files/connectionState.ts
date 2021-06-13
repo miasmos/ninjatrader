@@ -47,6 +47,10 @@ class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
             // noop
         }
     }
+
+    get connected(): boolean {
+        return this.lastState === ConnectionStatus.Connected ? true : false;
+    }
 }
 
 export default ConnectionStateWatcher;
