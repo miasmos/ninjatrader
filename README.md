@@ -9,8 +9,11 @@ A tiny js wrapper for the NinjaTrader 8 file api.
 ```
 npm install ninjatrader
 
+```
+
 or
 
+```
 yarn add ninjatrader
 ```
 
@@ -53,7 +56,7 @@ nt.limit({
 Cancel an order
 
 ```
-const orderId = 1; // random unique id
+const orderId = "1"; // random unique id
 
 nt.market({
     action: NinjaTraderAction.Buy,
