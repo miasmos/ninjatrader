@@ -136,11 +136,11 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    marketMany(options: NinjaTraderMarket[]) {
+    marketMany(options: NinjaTraderMarketOptions[]) {
         return Promise.all(options.map(option => this.market(option)));
     }
 
-    limit(options: NinjaTraderLimit) {
+    limit(options: NinjaTraderLimitOptions) {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -149,11 +149,11 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    limitMany(options: NinjaTraderLimit[]) {
+    limitMany(options: NinjaTraderLimitOptions[]) {
         return Promise.all(options.map(option => this.limit(option)));
     }
 
-    stop(options: NinjaTraderStop) {
+    stop(options: NinjaTraderStopOptions) {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -162,11 +162,11 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    stopMany(options: NinjaTraderStop[]) {
+    stopMany(options: NinjaTraderStopOptions[]) {
         return Promise.all(options.map(option => this.stop(option)));
     }
 
-    stopLimit(options: NinjaTraderStopLimit) {
+    stopLimit(options: NinjaTraderStopLimitOptions) {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -175,7 +175,7 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    stopLimitMany(options: NinjaTraderStopLimit[]) {
+    stopLimitMany(options: NinjaTraderStopLimitOptions[]) {
         return Promise.all(options.map(option => this.stopLimit(option)));
     }
 
