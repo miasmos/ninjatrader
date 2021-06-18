@@ -8,16 +8,17 @@ class Util {
     static eventAnyAsync<T>(emitter: EventEmitter, events: string[], timeout = 5000): Promise<T> {
         return new Promise((resolve, reject) => {
             let wasResolved = false;
-
-            const cleanup = () => events.map(event => emitter.off(event, callback));
+            let cleanup = (): void => {
+                /* noop */
+            };
             const interval = setTimeout(() => {
                 if (!wasResolved) {
-                    reject("Call timed out");
+                    reject(new Error("Call timed out"));
                     cleanup();
                     wasResolved = true;
                 }
             }, timeout);
-            const callback = (payload: T) => {
+            const callback = (payload: T): void => {
                 if (!wasResolved) {
                     wasResolved = true;
                     clearTimeout(interval);
@@ -26,6 +27,7 @@ class Util {
                     wasResolved = true;
                 }
             };
+            cleanup = (): EventEmitter[] => events.map(event => emitter.off(event, callback));
 
             events.map(event => emitter.on(event, callback));
         });

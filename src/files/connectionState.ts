@@ -10,10 +10,10 @@ declare interface ConnectionStateWatcher {
 }
 
 class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
-    path: string = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
+    path = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
     connection: string;
     watcher: Watcher;
-    state: string;
+    state: string | undefined;
 
     constructor({
         connection,
@@ -44,7 +44,7 @@ class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
         this.watcher.on(FileEvent.Modified, this.onModified.bind(this));
     }
 
-    private onModified(file: string) {
+    private onModified(file: string): void {
         const status = file.trim();
         const shouldUpdate = status !== this.state && status.length > 0;
 
@@ -62,23 +62,23 @@ class ConnectionStateWatcher extends EventEmitter implements StateWatcher {
             default:
             // noop
         }
-        this.emit(ConnectionStatus.Update, status === ConnectionStatus.Connected ? true : false);
+        this.emit(ConnectionStatus.Update, status === ConnectionStatus.Connected);
     }
 
-    onConnected(callback: () => void) {
+    onConnected(callback: () => void): void {
         this.on(ConnectionStatus.Connected, callback);
     }
 
-    onDisconnected(callback: () => void) {
+    onDisconnected(callback: () => void): void {
         this.on(ConnectionStatus.Disconnected, callback);
     }
 
-    onUpdate(callback: (connected: boolean) => void) {
+    onUpdate(callback: (connected: boolean) => void): void {
         this.on(ConnectionStatus.Update, callback);
     }
 
     get connected(): boolean {
-        return this.state === ConnectionStatus.Connected ? true : false;
+        return this.state === ConnectionStatus.Connected;
     }
 }
 

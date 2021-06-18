@@ -8,11 +8,11 @@ declare interface PositionUpdateWatcher {
 }
 
 class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
-    path: string = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
+    path = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
     account: string;
     instrument: string;
     watcher: Watcher;
-    state: PositionUpdateState;
+    state: PositionUpdateState | undefined;
 
     constructor({ path, account, instrument, onUpdate }: PositionUpdateStateOptions) {
         super();
@@ -32,7 +32,7 @@ class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
         this.watcher.on(FileEvent.Modified, this.onModified.bind(this));
     }
 
-    private onModified(file: string) {
+    private onModified(file: string): void {
         const [position, quantity, price] = file.trim().split(";");
         const state: PositionUpdateState = {
             position: position as MarketPosition,
@@ -50,7 +50,7 @@ class PositionUpdateWatcher extends EventEmitter implements StateWatcher {
         }
     }
 
-    onUpdate(callback: (order: PositionUpdateState) => void) {
+    onUpdate(callback: (order: PositionUpdateState) => void): void {
         this.on(PositionStatus.Update, callback);
     }
 

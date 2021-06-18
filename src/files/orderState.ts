@@ -19,12 +19,12 @@ declare interface OrderStateWatcher {
 }
 
 class OrderStateWatcher extends EventEmitter implements StateWatcher {
-    path: string = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
+    path = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
     account: string;
     orderId: string;
     watcher: Watcher;
-    status: OrderStatus;
-    state: OrderState;
+    status: OrderStatus | undefined;
+    state: OrderState | undefined;
 
     constructor({
         orderId,
@@ -93,55 +93,55 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
         this.watcher.on(FileEvent.Modified, this.onModified.bind(this));
     }
 
-    onFilled(callback: (order: OrderState) => void) {
+    onFilled(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Filled, callback);
     }
 
-    onInitialized(callback: (order: OrderState) => void) {
+    onInitialized(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Initialized, callback);
     }
 
-    onSubmitted(callback: (order: OrderState) => void) {
+    onSubmitted(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Submitted, callback);
     }
 
-    onAccepted(callback: (order: OrderState) => void) {
+    onAccepted(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Accepted, callback);
     }
 
-    onWorking(callback: (order: OrderState) => void) {
+    onWorking(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Working, callback);
     }
 
-    onChangeSubmitted(callback: (order: OrderState) => void) {
+    onChangeSubmitted(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.ChangeSubmitted, callback);
     }
 
-    onCancelPending(callback: (order: OrderState) => void) {
+    onCancelPending(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.CancelPending, callback);
     }
 
-    onCancelled(callback: (order: OrderState) => void) {
+    onCancelled(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Cancelled, callback);
     }
 
-    onRejected(callback: (order: OrderState) => void) {
+    onRejected(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.Rejected, callback);
     }
 
-    onPartiallyFilled(callback: (order: OrderState) => void) {
+    onPartiallyFilled(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.PartiallyFilled, callback);
     }
 
-    onTriggerPending(callback: (order: OrderState) => void) {
+    onTriggerPending(callback: (order: OrderState) => void): void {
         this.on(OrderStatus.TriggerPending, callback);
     }
 
-    onUpdate(callback: (status: OrderStatus, order: OrderState) => void) {
+    onUpdate(callback: (status: OrderStatus, order: OrderState) => void): void {
         this.on(OrderStatus.Update, callback);
     }
 
-    private onModified(file: string) {
+    private onModified(file: string): void {
         const [status, quantity, price] = file.trim().split(";");
         const shouldUpdate =
             status &&
@@ -149,8 +149,8 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
             price &&
             ((!this.status && !this.state) ||
                 this.status !== (status as OrderStatus) ||
-                this.state.price !== Number(price) ||
-                this.state.quantity !== Number(quantity));
+                this.state!.price !== Number(price) ||
+                this.state!.quantity !== Number(quantity));
         if (!shouldUpdate) {
             return;
         }
@@ -160,14 +160,14 @@ class OrderStateWatcher extends EventEmitter implements StateWatcher {
         this.emit(OrderStatus.Update, status, this.state);
     }
 
-    get price(): Number {
+    get price(): number {
         if (this.state) {
             return this.state.price;
         }
         return 0;
     }
 
-    get quantity(): Number {
+    get quantity(): number {
         if (this.state) {
             return this.state.quantity;
         }

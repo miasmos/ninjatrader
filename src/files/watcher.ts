@@ -15,10 +15,10 @@ declare interface Watcher {
 
 class Watcher extends EventEmitter {
     path: string;
-    monitor: boolean = true;
-    frequency: number = 1000;
-    interval: NodeJS.Timeout;
-    lastModified: Date;
+    monitor = true;
+    frequency = 1000;
+    interval: NodeJS.Timeout | undefined;
+    lastModified: Date | undefined;
 
     constructor({ path, frequency, monitor }: WatcherOptions) {
         super();
@@ -35,7 +35,7 @@ class Watcher extends EventEmitter {
         }
     }
 
-    async read() {
+    async read(): Promise<string | undefined> {
         try {
             const { mtime } = await fs.promises.stat(this.path);
             const wasModified = !this.lastModified || isAfter(mtime, this.lastModified);
@@ -48,7 +48,9 @@ class Watcher extends EventEmitter {
             const file = await fs.promises.readFile(this.path, "utf8");
             this.emit(FileEvent.Modified, file);
             return file;
-        } catch {} // file not found / inaccessible
+        } catch {
+            // noop
+        } // file not found / inaccessible
 
         return undefined;
     }

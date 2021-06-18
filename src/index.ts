@@ -38,8 +38,8 @@ import ConnectionStateWatcher from "./files/connectionState";
 import PositionUpdateWatcher from "./files/positionUpdateState";
 
 class NinjaTrader extends EventEmitter {
-    account: string = "Sim101";
-    path: string = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
+    account = "Sim101";
+    path = `${process.env.USERPROFILE!}\\Documents\\NinjaTrader 8`;
     watchers: { [key: string]: StateWatcher } = {};
 
     constructor(options?: NinjaTraderOptions) {
@@ -62,7 +62,7 @@ class NinjaTrader extends EventEmitter {
         }
     }
 
-    onConnected(connection: string, callback: () => void) {
+    onConnected(connection: string, callback: () => void): ConnectionStateWatcher {
         let watcher: ConnectionStateWatcher;
         if (connection in this.watchers) {
             watcher = this.watchers[connection] as ConnectionStateWatcher;
@@ -78,7 +78,7 @@ class NinjaTrader extends EventEmitter {
         return watcher;
     }
 
-    onDisconnected(connection: string, callback: () => void) {
+    onDisconnected(connection: string, callback: () => void): ConnectionStateWatcher {
         let watcher: ConnectionStateWatcher;
         if (connection in this.watchers) {
             watcher = this.watchers[connection] as ConnectionStateWatcher;
@@ -94,7 +94,10 @@ class NinjaTrader extends EventEmitter {
         return watcher;
     }
 
-    onConnection(connection: string, callback: (connected: boolean) => void) {
+    onConnection(
+        connection: string,
+        callback: (connected: boolean) => void
+    ): ConnectionStateWatcher {
         let watcher: ConnectionStateWatcher;
         if (connection in this.watchers) {
             watcher = this.watchers[connection] as ConnectionStateWatcher;
@@ -110,7 +113,10 @@ class NinjaTrader extends EventEmitter {
         return watcher;
     }
 
-    onPosition(instrument: string, callback: (state: PositionUpdateState) => void) {
+    onPosition(
+        instrument: string,
+        callback: (state: PositionUpdateState) => void
+    ): PositionUpdateWatcher {
         let watcher: PositionUpdateWatcher;
         if (instrument in this.watchers) {
             watcher = this.watchers[instrument] as PositionUpdateWatcher;
@@ -127,7 +133,7 @@ class NinjaTrader extends EventEmitter {
         return watcher;
     }
 
-    market(options: NinjaTraderMarketOptions) {
+    market(options: NinjaTraderMarketOptions): Promise<OrderStateWatcher> {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -136,11 +142,11 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    marketMany(options: NinjaTraderMarketOptions[]) {
+    marketMany(options: NinjaTraderMarketOptions[]): Promise<OrderStateWatcher[]> {
         return Promise.all(options.map(option => this.market(option)));
     }
 
-    limit(options: NinjaTraderLimitOptions) {
+    limit(options: NinjaTraderLimitOptions): Promise<OrderStateWatcher> {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -149,11 +155,11 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    limitMany(options: NinjaTraderLimitOptions[]) {
+    limitMany(options: NinjaTraderLimitOptions[]): Promise<OrderStateWatcher[]> {
         return Promise.all(options.map(option => this.limit(option)));
     }
 
-    stop(options: NinjaTraderStopOptions) {
+    stop(options: NinjaTraderStopOptions): Promise<OrderStateWatcher> {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -162,11 +168,11 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    stopMany(options: NinjaTraderStopOptions[]) {
+    stopMany(options: NinjaTraderStopOptions[]): Promise<OrderStateWatcher[]> {
         return Promise.all(options.map(option => this.stop(option)));
     }
 
-    stopLimit(options: NinjaTraderStopLimitOptions) {
+    stopLimit(options: NinjaTraderStopLimitOptions): Promise<OrderStateWatcher> {
         return this.submitOrderAndWatch({
             account: this.account,
             ...options,
@@ -175,51 +181,51 @@ class NinjaTrader extends EventEmitter {
         });
     }
 
-    stopLimitMany(options: NinjaTraderStopLimitOptions[]) {
+    stopLimitMany(options: NinjaTraderStopLimitOptions[]): Promise<OrderStateWatcher[]> {
         return Promise.all(options.map(option => this.stopLimit(option)));
     }
 
-    cancel(options: NinjaTraderCancel) {
+    cancel(options: NinjaTraderCancel): Promise<void> {
         return this.submitOrder({
             ...options,
             command: NinjaTraderCommand.Cancel,
         });
     }
 
-    change(options: NinjaTraderChange) {
+    change(options: NinjaTraderChange): Promise<void> {
         return this.submitOrder({
             ...options,
             command: NinjaTraderCommand.Change,
         });
     }
 
-    close(options: NinjaTraderClose) {
+    close(options: NinjaTraderClose): Promise<void> {
         return this.submitOrder({
             ...options,
             command: NinjaTraderCommand.ClosePosition,
         });
     }
 
-    closeStrategy(options: NinjaTraderCloseStrategy) {
+    closeStrategy(options: NinjaTraderCloseStrategy): Promise<void> {
         return this.submitOrder({
             ...options,
             command: NinjaTraderCommand.CloseStrategy,
         });
     }
 
-    cancelAll() {
+    cancelAll(): Promise<void> {
         return this.submitOrder({
             command: NinjaTraderCommand.CancelAllOrders,
         });
     }
 
-    flatten() {
+    flatten(): Promise<void> {
         return this.submitOrder({
             command: NinjaTraderCommand.FlattenEverything,
         });
     }
 
-    reverse(options: NinjaTraderReverse) {
+    reverse(options: NinjaTraderReverse): Promise<void> {
         return this.submitOrder({
             command: NinjaTraderCommand.ReversePosition,
             account: this.account,
@@ -268,10 +274,10 @@ class NinjaTrader extends EventEmitter {
         return order;
     }
 
-    private submitOrder(command: NinjaTraderAllCommands) {
+    private submitOrder(command: NinjaTraderAllCommands): Promise<void> {
         return fs.promises.writeFile(
             `${this.path}\\incoming\\oif.${Math.random().toString().substring(2)}.txt`,
-            NinjaTrader.buildCommand(command)
+            NinjaTrader.buildCommand(command as unknown as PlaceCommand & { command: string })
         );
     }
 
@@ -289,7 +295,7 @@ class NinjaTrader extends EventEmitter {
         orderId,
         strategy,
         strategyId,
-    }: any): string {
+    }: PlaceCommand & { command: string }): string {
         return [
             command,
             account,
