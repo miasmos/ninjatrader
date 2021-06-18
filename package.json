@@ -27,7 +27,7 @@
         "@types/date-fns": "^2.6.0",
         "@types/node": "^15.12.2",
         "@types/webpack": "^4.4.24",
-        "@types/webpack-env": "^1.13.7",
+        "@types/webpack-env": "^1.16.0",
         "@typescript-eslint/eslint-plugin": "^2.27.0",
         "@typescript-eslint/parser": "^2.27.0",
         "awesome-typescript-loader": "^5.2.1",

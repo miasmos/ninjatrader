@@ -14,7 +14,7 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "target": "ES5",
-        "lib": ["ESNext"],
+        "lib": ["ESNext", "DOM"],
         "preserveSymlinks": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
